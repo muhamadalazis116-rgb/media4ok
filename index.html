@@ -1,0 +1,2238 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misteri ALKI: Petualangan Penemuan!</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #2d5a8c, #4a90c7);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            background: linear-gradient(90deg, rgba(255,107,107,0.08), rgba(74,156,255,0.08));
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 1s ease-out;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #4a9cff;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .nav-btn:hover {
+            background: #4a9cff;
+            transform: translateY(-3px);
+        }
+
+        .nav-btn.active {
+            background: #ff6b6b;
+            border-color: #ff6b6b;
+        }
+
+        .content-section {
+            display: none;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .section-title {
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ffcc00;
+            padding-bottom: 10px;
+            color: #ffcc00;
+        }
+
+        .visualization-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .molecule-viewer {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #molecule-container {
+            width: 100%;
+            height: 350px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .molecule-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .control-btn {
+            padding: 8px 12px;
+            background: linear-gradient(90deg,#4a9cff,#6dd5fa);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .control-btn:hover {
+            background: #2d7ad6;
+            transform: translateY(-2px);
+        }
+
+        .atom-legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .color-box {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+        }
+
+        .carbon-color {
+            background-color: #333333;
+        }
+
+        .hydrogen-color {
+            background-color: #ffffff;
+        }
+
+        .info-panel {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .alkane-info {
+            margin-bottom: 20px;
+        }
+
+        .alkane-info h3 {
+            color: #ffcc00;
+            margin-bottom: 10px;
+        }
+
+        .formula-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 1.2rem;
+        }
+
+        .prefix-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .prefix-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .prefix-item:hover {
+            background: rgba(74, 156, 255, 0.3);
+            transform: translateY(-3px);
+        }
+
+        .prefix-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffcc00;
+        }
+
+        .prefix-name {
+            font-size: 1rem;
+            margin-top: 5px;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.35);
+            border-left: 6px solid rgba(74,156,255,0.18);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        .game-container:hover { transform: translateY(-6px); box-shadow: 0 18px 30px rgba(0,0,0,0.45); }
+
+        /* Game lobby / round cards */
+        .game-lobby {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+        .round-card {
+            width: 260px;
+            padding: 16px;
+            border-radius: 12px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+            box-shadow: 0 8px 20px rgba(0,0,0,0.45);
+            cursor: pointer;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border 0.25s ease;
+            border: 2px solid transparent;
+        }
+        .round-card:hover { transform: translateY(-8px) scale(1.02); border-color: rgba(74,156,255,0.22); }
+        .round-card .rc-title { font-weight: bold; font-size: 1.05rem; margin-bottom: 8px; color: #ffd; }
+        .round-card .rc-desc { font-size: 0.95rem; color: #ddd; margin-bottom:12px; }
+        .round-card .rc-progress { height:10px; background: rgba(255,255,255,0.06); border-radius:6px; overflow:hidden; }
+        .round-card .rc-fill { height:100%; width:0%; background: linear-gradient(90deg,#4a9cff,#ff6b6b); transition: width 0.5s ease; }
+
+        .hint-box { background: rgba(0,0,0,0.45); padding:8px; border-radius:6px; margin-top:8px; display:none; }
+        .timer-bubble { display:inline-block; padding:6px 8px; background: rgba(255,255,255,0.06); border-radius:20px; margin-left:8px; font-weight:bold; }
+
+        .game-question {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .game-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .game-option {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .game-option:hover {
+            background: rgba(74, 156, 255, 0.3);
+        }
+
+        .game-option.correct {
+            background: rgba(76, 175, 80, 0.5);
+        }
+
+        .game-option.incorrect {
+            background: rgba(244, 67, 54, 0.5);
+        }
+
+        .game-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .game-btn {
+            padding: 10px 20px;
+            background: #4a9cff;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .game-btn:hover {
+            background: #2d7ad6;
+            transform: translateY(-2px);
+        }
+
+        .game-btn.next {
+            background: #ff6b6b;
+        }
+
+        .game-btn.next:hover {
+            background: #e05555;
+        }
+
+        .game-progress {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, #4a9cff, #ff6b6b);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .reflection-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .reflection-question {
+            margin-bottom: 15px;
+        }
+
+        .reflection-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #4a9cff;
+            border-radius: 5px;
+            padding: 10px;
+            color: white;
+            margin-bottom: 15px;
+            min-height: 80px;
+        }
+
+        .diagram-2d {
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.02), 0 6px 12px rgba(0,0,0,0.22);
+        }
+
+        .certificate {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f);
+            border-radius: 15px;
+            margin-top: 30px;
+            display: none;
+        }
+
+        .certificate.active {
+            display: block;
+            animation: zoomIn 0.8s ease-out;
+        }
+
+        .certificate h2 {
+            color: #ffcc00;
+            margin-bottom: 20px;
+        }
+
+        .certificate p {
+            margin-bottom: 15px;
+        }
+
+        .student-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffcc00;
+            margin: 20px 0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes zoomIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .visualization-container {
+                flex-direction: column;
+            }
+            
+            .navigation {
+                flex-direction: column;
+            }
+            
+            .game-options {
+                grid-template-columns: 1fr;
+            }
+        }
+        /* Label sprites for atom groups (CH3, CH2) */
+        .label-sprite {
+            pointer-events: none;
+            font-weight: bold;
+            color: #ffffff;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+            padding: 4px 8px;
+            border-radius: 6px;
+            background: linear-gradient(90deg, rgba(0,0,0,0.6), rgba(0,0,0,0.35));
+        }
+
+        /* Feedback visuals for answers */
+        .feedback {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 12px;
+            font-size: 1.05rem;
+        }
+
+        .feedback.correct {
+            color: #a5d6a7; /* light green */
+        }
+
+        .feedback.incorrect {
+            color: #ef9a9a; /* light red */
+        }
+
+        .feedback .icon {
+            font-size: 1.6rem;
+        }
+
+        /* Atom tooltip */
+        .atom-tooltip {
+            position: absolute;
+            pointer-events: none;
+            background: rgba(0,0,0,0.75);
+            color: #fff;
+            padding: 6px 8px;
+            border-radius: 6px;
+            font-size: 13px;
+            transform: translate(-50%, -120%);
+            display: none;
+            z-index: 1000;
+            white-space: nowrap;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+        }
+
+        /* 2D diagram box */
+        .diagram-2d {
+            width: 220px;
+            height: 80px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
+            padding: 6px;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 12px;
+        }
+
+        /* Debug panel */
+        .debug-panel {
+            position: fixed;
+            right: 12px;
+            top: 12px;
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            padding: 8px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            z-index: 2000;
+            max-width: 320px;
+            max-height: 200px;
+            overflow: auto;
+        }
+        /* Atom info panel */
+        .atom-info {
+            margin-top: 12px;
+            padding: 10px;
+            background: rgba(0,0,0,0.45);
+            border-radius: 8px;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.4);
+        }
+
+        /* Confetti overlay (simple) */
+        #confetti-canvas {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 3000;
+        }
+        @keyframes hueShift { 0% { filter: hue-rotate(0deg);} 50% { filter: hue-rotate(45deg);} 100% { filter: hue-rotate(0deg);} }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1;} 50% { transform: scale(1.05); opacity: 0.9;} 100% { transform: scale(1); opacity: 1;} }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Misteri ALKI: Petualangan Penemuan! 🔍</h1>
+            <p class="subtitle">Media Pembelajaran Interaktif - Struktur dan Tata Nama</p>
+        </header>
+
+        <div class="navigation">
+            <button class="nav-btn active" data-section="intro">Pengenalan Alkana</button>
+            <button class="nav-btn" data-section="naming">Tata Nama Alkana</button>
+            <button class="nav-btn" data-section="simulation">Simulasi 3D</button>
+            <button class="nav-btn" data-section="game">Permainan Alkana</button>
+            <button class="nav-btn" data-section="reflection">Refleksi</button>
+            <button class="nav-btn" id="open-game-quick">Buka Permainan</button>
+        </div>
+
+        <div class="debug-panel" id="debug-panel" style="display:none;"></div>
+
+        <!-- Bagian 1: Pengenalan Alkana -->
+        <section id="intro" class="content-section active">
+            <h2 class="section-title">Pengenalan Alkana</h2>
+            <div class="visualization-container">
+                <div class="molecule-viewer">
+                    <div id="molecule-container"></div>
+                    <div class="molecule-controls">
+                <button class="control-btn" id="add-carbon">Tambah 1 Atom C</button>
+                <button class="control-btn" id="remove-carbon">Kurangi 1 Atom C</button>
+                <button class="control-btn" id="reset-molecule">Reset ke Metana</button>
+                <button class="control-btn" id="toggle-autorotate">Toggle Auto-Rotate</button>
+                <button class="control-btn" id="focus-molecule">Fokus Molekul</button>
+                        <div id="preset-buttons" style="margin-left:8px; display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">
+                            <button class="control-btn" id="preset-methane">Metana</button>
+                            <button class="control-btn" id="preset-pentane">Pentana</button>
+                            <button class="control-btn" id="preset-2methylbutane">2‑Metilbutana</button>
+                            <button class="control-btn" id="preset-2,3-dimethylpentane">2,3‑Dimetilpentana</button>
+                            <button class="control-btn" id="toggle-melody">Melodi: OFF</button>
+                        </div>
+                    </div>
+                    <div class="atom-legend">
+                        <div class="legend-item">
+                            <div class="color-box carbon-color"></div>
+                            <span>Karbon (C)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="color-box hydrogen-color"></div>
+                            <span>Hidrogen (H)</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="info-panel">
+                    <div class="alkane-info">
+                        <h3 id="alkane-name">Metana (CH₄)</h3>
+                        <p id="alkane-description">Alkana adalah hidrokarbon jenuh yang hanya memiliki ikatan tunggal (C–C). Metana adalah alkana paling sederhana dengan satu atom karbon dan empat atom hidrogen.</p>
+                        <div class="formula-box">
+                            <p>Rumus Molekul: <span id="molecular-formula">CH₄</span></p>
+                        </div>
+                        <div class="atom-info" id="atom-info">
+                            <strong>Info Atom</strong>
+                            <p id="atom-info-text">Klik sebuah atom pada tampilan 3D untuk melihat detail (C = karbon, H = hidrogen).</p>
+                            <div style="margin-top:8px; display:flex; gap:8px;"><button class="control-btn" id="atom-quiz-btn">Cek Quiz</button><button class="control-btn" id="atom-unpin">Tutup</button></div>
+                        </div>
+                    </div>
+                    <div class="alkane-info">
+                        <h3>Pola Perubahan Struktur</h3>
+                        <p>Setiap penambahan satu atom karbon (C) akan menambah dua atom hidrogen (H) dan satu metilena (-CH₂-) pada rantai.</p>
+                        <p>Gunakan tombol di samping untuk menjelajahi perubahan struktur alkana!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bagian 2: Dasar Tata Nama Alkana -->
+        <section id="naming" class="content-section">
+            <h2 class="section-title">Dasar Tata Nama Alkana</h2>
+            <div class="info-panel">
+                <p>Alkana memiliki sistem penamaan berdasarkan jumlah atom karbon dalam rantai utamanya. Berikut adalah prefiks (awalan) yang digunakan:</p>
+                
+                <div class="prefix-grid">
+                    <div class="prefix-item" data-prefix="meth">
+                        <div class="prefix-number">1</div>
+                        <div class="prefix-name">Met-</div>
+                    </div>
+                    <div class="prefix-item" data-prefix="eth">
+                        <div class="prefix-number">2</div>
+                        <div class="prefix-name">Et-</div>
+                    </div>
+                    <div class="prefix-item" data-prefix="prop">
+                        <div class="prefix-number">3</div>
+                        <div class="prefix-name">Prop-</div>
+                    </div>
+                    <div class="prefix-item" data-prefix="but">
+                        <div class="prefix-number">4</div>
+                        <div class="prefix-name">But-</div>
+                    </div>
+                    <div class="prefix-item" data-prefix="pent">
+                        <div class="prefix-number">5</div>
+                        <div class="prefix-name">Pent-</div>
+                    </div>
+                    <div class="prefix-item" data-prefix="hex">
+                        <div class="prefix-number">6</div>
+                        <div class="prefix-name">Heks-</div>
+                    </div>
+                    <div class="prefix-item" data-prefix="hept">
+                        <div class="prefix-number">7</div>
+                        <div class="prefix-name">Hept-</div>
+                    </div>
+                    <div class="prefix-item" data-prefix="oct">
+                        <div class="prefix-number">8</div>
+                        <div class="prefix-name">Okt-</div>
+                    </div>
+                </div>
+                
+                <div class="alkane-info" style="margin-top: 20px;">
+                    <h3>Aturan Penamaan Alkana</h3>
+                    <ul>
+                        <li>Nama alkana terdiri dari <strong>prefiks</strong> (berdasarkan jumlah atom C) + <strong>akhiran -ana</strong></li>
+                        <li>Contoh: Met- + ana = <strong>Metana</strong></li>
+                        <li>Untuk alkana rantai lurus, tidak perlu penomoran</li>
+                        <li>Untuk alkana rantai bercabang, perlu penomoran posisi cabang</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bagian 3: Simulasi Ikatan 3D -->
+        <section id="simulation" class="content-section">
+            <h2 class="section-title">Simulasi Ikatan 3D</h2>
+            <div class="visualization-container">
+                <div class="molecule-viewer">
+                    <div id="simulation-container"></div>
+                    <div class="molecule-controls">
+                        <button class="control-btn" id="show-bonds">Tampilkan Ikatan</button>
+                        <button class="control-btn" id="hide-hydrogen">Sembunyikan Atom H</button>
+                        <button class="control-btn" id="show-all">Tampilkan Semua</button>
+                    </div>
+                    <div class="atom-legend">
+                        <div class="legend-item">
+                            <div class="color-box carbon-color"></div>
+                            <span>Karbon (C)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="color-box hydrogen-color"></div>
+                            <span>Hidrogen (H)</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="info-panel">
+                    <div class="alkane-info">
+                        <h3>Eksperimen dengan Struktur 3D</h3>
+                        <p>Gunakan kontrol di samping untuk memanipulasi tampilan molekul:</p>
+                        <ul>
+                            <li><strong>Tampilkan Ikatan</strong> - Menyoroti ikatan tunggal C-C</li>
+                            <li><strong>Sembunyikan Atom H</strong> - Hanya menampilkan rangka karbon</li>
+                            <li><strong>Tampilkan Semua</strong> - Kembali ke tampilan normal</li>
+                        </ul>
+                        <p>Anda juga dapat menggunakan mouse untuk:
+                            <ul>
+                                <li>Memutar molekul - Kiri + gerakkan mouse</li>
+                                <li>Memperbesar/memperkecil - Scroll mouse</li>
+                                <li>Menggeser - Kanan + gerakkan mouse</li>
+                            </ul>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bagian 4: Permainan Alkana -->
+        <section id="game" class="content-section">
+            <h2 class="section-title">Permainan: Tebak dan Rangkai Alkana!</h2>
+            
+                <div class="game-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="game-progress"></div>
+                    </div>
+                    <p>Ronde <span id="current-round">1</span> dari <span id="total-rounds">3</span></p>
+                </div>
+
+                <!-- Game structure: 3 rounds, each with 3 babak -->
+                <div id="game-rounds-wrapper">
+                    <!-- Ronde template will be populated by JS -->
+                </div>
+
+                <div class="reflection-section" id="game-conclusion" style="display: none;">
+                    <h3>Kesimpulan Permainan</h3>
+                    <div id="round-summaries"></div>
+                    <p>Skor akhir kamu: <span id="final-score">0</span> dari <span id="total-questions">9</span></p>
+                    <div id="conclusion-text" style="margin-top:12px;"></div>
+                </div>
+        </section>
+
+        <!-- Bagian 5: Refleksi -->
+        <section id="reflection" class="content-section">
+            <h2 class="section-title">Refleksi Pembelajaran</h2>
+            
+            <div class="reflection-section">
+                <div class="reflection-question">
+                    <h3>1. Apa pola yang kamu temukan pada alkana rantai lurus?</h3>
+                    <textarea class="reflection-input" placeholder="Tulis jawabanmu di sini..."></textarea>
+                </div>
+                
+                <div class="reflection-question">
+                    <h3>2. Bagaimana cara menentukan penomoran cabang pada alkana bercabang?</h3>
+                    <textarea class="reflection-input" placeholder="Tulis jawabanmu di sini..."></textarea>
+                </div>
+                
+                <div class="reflection-question">
+                    <h3>3. Apa perbedaan struktur bercabang dan tidak bercabang?</h3>
+                    <textarea class="reflection-input" placeholder="Tulis jawabanmu di sini..."></textarea>
+                </div>
+                
+                <button class="game-btn" id="submit-reflection" style="width: 100%;">Submit Refleksi</button>
+            </div>
+            
+            <div class="certificate" id="certificate">
+                <h2>Sertifikat Eksplorator Alkana 3D</h2>
+                <p>Diberikan kepada:</p>
+                <div class="student-name" id="student-name">Nama Siswa</div>
+                <p>Atas partisipasi aktif dalam Petualangan 3D Bersama Alkana!</p>
+                <p>Telah berhasil menyelesaikan pembelajaran tentang struktur dan tata nama alkana.</p>
+                <p>Skor: <span id="certificate-score">0</span>/3</p>
+                <p>Selamat! Kamu sekarang adalah Eksplorator Alkana 3D!</p>
+            </div>
+        </section>
+
+        <footer>
+            <p>Media Pembelajaran Kimia - Petualangan 3D Bersama Alkana!</p>
+        </footer>
+    </div>
+
+    <script>
+    // Data alkana
+        const alkanes = {
+            methane: {
+                name: "Metana",
+                formula: "CH₄",
+                description: "Alkana dengan satu atom karbon. Strukturnya tetrahedral dengan sudut ikatan 109.5°.",
+                carbonCount: 1
+            },
+            ethane: {
+                name: "Etana",
+                formula: "C₂H₆",
+                description: "Alkana dengan dua atom karbon dalam rantai lurus.",
+                carbonCount: 2
+            },
+            propane: {
+                name: "Propana",
+                formula: "C₃H₈",
+                description: "Alkana dengan tiga atom karbon dalam rantai lurus.",
+                carbonCount: 3
+            },
+            butane: {
+                name: "Butana",
+                formula: "C₄H₁₀",
+                description: "Alkana dengan empat atom karbon dalam rantai lurus.",
+                carbonCount: 4
+            },
+            pentane: {
+                name: "Pentana",
+                formula: "C₅H₁₂",
+                description: "Alkana dengan lima atom karbon dalam rantai lurus.",
+                carbonCount: 5
+            },
+            hexane: {
+                name: "Heksana",
+                formula: "C₆H₁₄",
+                description: "Alkana dengan enam atom karbon dalam rantai lurus.",
+                carbonCount: 6
+            }
+        };
+
+        // Game questions: 3 rounds x 3 babak (9 questions)
+        const gameQuestions = [
+            // Ronde 1: straight-chain alkanes (identify from C and H counts)
+            { round: 1, prompt: 'Molekul ini memiliki 3 atom C dan 8 atom H. Apa nama senyawanya?', choices: ['Metana','Propana','Butana','Etana'], answer: 'Propana', hint: 'Rumus umum alkana: CnH2n+2' },
+            { round: 1, prompt: 'Molekul ini memiliki 4 atom C dan 10 atom H. Apa nama senyawanya?', choices: ['Butana','Pentana','Etana','Propana'], answer: 'Butana', hint: '4 C -> but-' },
+            { round: 1, prompt: 'Molekul ini memiliki 5 atom C dan 12 atom H. Apa nama senyawanya?', choices: ['Pentana','Heksana','Butana','Propana'], answer: 'Pentana', hint: '5 C -> pent-' },
+
+            // Ronde 2: branched alkanes (positioning and naming)
+            { round: 2, prompt: 'Pada 2-metilbutana, pada atom karbon berapa cabang metil berada?', choices: ['1','2','3','4'], answer: '2', hint: 'Penomoran dimulai dari ujung terdekat cabang' },
+            { round: 2, prompt: 'Nama yang benar untuk struktur dengan rantai utama 5 C dan satu cabang metil pada C-3?', choices: ['3-metilpentana','2-metilpentana','metilpentana','pentametil'], answer: '3-metilpentana', hint: 'Nomor di depan nama cabang' },
+            { round: 2, prompt: 'Jika ada satu cabang metil pada karbon kedua dari rantai 4 C, nama yang benar adalah?', choices: ['2-metilbutana','3-metilbutana','metilbutana','butametil'], answer: '2-metilbutana', hint: 'Butana = 4 C' },
+
+            // Ronde 3: mixed (structure recognition)
+            { round: 3, prompt: 'Manakah pilihan yang menggambarkan 3-metilpentana?', choices: ['Rantai lurus 5 C','Cabang metil di C-3','Cabang metil di C-2','Dua cabang metil'], answer: 'Cabang metil di C-3', hint: 'Perhatikan posisi angka' },
+            { round: 3, prompt: 'Senyawa dengan formula C6H14 yang bukan rantai lurus adalah contoh?', choices: ['Heksana','2-metilpentana','Pentana','Propana'], answer: '2-metilpentana', hint: '6 C bisa bercabang' },
+            { round: 3, prompt: 'Jika ada rantai 5 C dan dua cabang metil pada C-2 dan C-3, nama yang benar adalah?', choices: ['2,3-dimetilpentana','3,3-dimetilpentana','2-dimetilpentana','dimetilpentana'], answer: '2,3-dimetilpentana', hint: 'Gunakan koma untuk posisi, abjad untuk penamaan cabang' }
+        ];
+
+        // State for game
+        let gameState = {
+            currentRound: 1,
+            currentBabakIndex: 0, // index within all questions
+            answers: [], // {questionIndex, selected, correct}
+            roundConclusions: {1: '', 2: '', 3: ''}
+        };
+
+        // interactivity tracking
+        let atomMeshes = [];
+        let bondMeshes = [];
+        // simulation-specific tracking
+        let simulationAtomMeshes = [];
+        let simulationBondMeshes = [];
+        let raycaster, mouse;
+
+        // Variabel global untuk Three.js
+        let scene, camera, renderer, controls;
+        let simulationScene, simulationCamera, simulationRenderer, simulationControls;
+        let currentMolecule = null;
+        let currentCarbonCount = 1;
+        let gameScore = 0;
+        let currentRound = 1;
+        let autoRotate = true;
+    // performance / appearance constants
+    const ATOM_SEGMENTS = 16; // lower for performance, still smooth
+    const BOND_CYL_SEGMENTS = 12;
+
+    // bond pulse animations
+    let activeBondPulses = [];
+
+        // Konstanta untuk panjang ikatan
+        const BOND_LENGTH_C_H = 1.09;
+        const BOND_LENGTH_C_C = 1.54;
+
+        // Inisialisasi aplikasi
+        function init() {
+            console.log('init app');
+            initNavigation();
+            init3DVisualization();
+            initInteractivity();
+            initSimulation();
+            initGame();
+            initReflection();
+        }
+
+        // Initialize hover/tooltip interactivity for molecule viewer
+        function initInteractivity() {
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
+            const tooltip = document.createElement('div');
+            tooltip.id = 'atom-tooltip';
+            tooltip.className = 'atom-tooltip';
+            document.body.appendChild(tooltip);
+
+            let lastHovered = null;
+            renderer.domElement.addEventListener('mousemove', function(event) {
+                const rect = renderer.domElement.getBoundingClientRect();
+                mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+                mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObjects(atomMeshes.concat(bondMeshes), true);
+                if (intersects.length > 0) {
+                    const obj = intersects[0].object;
+                    // if we hover a different atom, reset previous
+                    if (lastHovered && lastHovered !== obj) {
+                        // restore scale
+                        lastHovered.scale.copy(lastHovered.userData._baseScale || new THREE.Vector3(1,1,1));
+                        // clear previous bond highlights
+                        clearBondHighlights();
+                    }
+
+                    if (obj.userData && obj.userData.label) {
+                        tooltip.style.display = 'block';
+                        tooltip.textContent = obj.userData.label;
+                        tooltip.style.left = event.clientX + 'px';
+                        tooltip.style.top = (event.clientY - 12) + 'px';
+                        // scale up hovered atom
+                        obj.scale.set(1.35,1.35,1.35);
+                        lastHovered = obj;
+                        // highlight connected bonds visually
+                        highlightConnectedBonds(obj.userData.connectedBonds || []);
+                        return;
+                    }
+                }
+                // no intersects
+                if (lastHovered) {
+                    lastHovered.scale.copy(lastHovered.userData._baseScale || new THREE.Vector3(1,1,1));
+                    lastHovered = null;
+                }
+                tooltip.style.display = 'none';
+                clearBondHighlights();
+            });
+        }
+
+        function highlightConnectedBonds(bonds) {
+            bondMeshes.forEach(b => {
+                if (b.material) {
+                    b.material.opacity = 0.35;
+                    if (b.material.emissive) b.material.emissive.set(0x000000);
+                }
+            });
+            bonds.forEach(b => {
+                if (b && b.material) {
+                    b.material.opacity = 1.0;
+                    if (b.material.emissive) b.material.emissive.set(0x66ccff);
+                    // start pulse
+                    pulseBond(b);
+                }
+            });
+        }
+
+        // Simple pulse animation for a bond: animate emissive intensity over time
+        function pulseBond(bond) {
+            if (!bond || !bond.material) return;
+            const start = performance.now();
+            const duration = 450; // ms
+            const id = { bond, running:true };
+            activeBondPulses.push(id);
+            const tick = (now) => {
+                if (!id.running) return;
+                const t = (now - start) / duration;
+                const v = Math.sin(t * Math.PI) * 0.8 + 0.2; // 0.2..1
+                if (bond.material && bond.material.emissive) {
+                    const c = new THREE.Color(0x66ccff).multiplyScalar(v);
+                    bond.material.emissive.setRGB(c.r, c.g, c.b);
+                }
+                if (t < 1) requestAnimationFrame(tick); else {
+                    // end
+                    if (bond.material && bond.material.emissive) bond.material.emissive.set(0x000000);
+                    id.running = false;
+                    // remove from active
+                    const i = activeBondPulses.indexOf(id); if (i>=0) activeBondPulses.splice(i,1);
+                }
+            };
+            requestAnimationFrame(tick);
+        }
+
+        function clearBondHighlights() {
+            bondMeshes.forEach(b => {
+                b.material.opacity = 1.0;
+                if (b.material.emissive) b.material.emissive.set(0x000000);
+            });
+        }
+
+        // Inisialisasi navigasi
+        function initNavigation() {
+            const navButtons = document.querySelectorAll('.nav-btn');
+            const sections = document.querySelectorAll('.content-section');
+            
+            navButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetSection = this.getAttribute('data-section');
+                    
+                    // Update tombol aktif
+                    navButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Tampilkan section yang sesuai
+                    sections.forEach(section => {
+                        section.classList.remove('active');
+                        if (section.id === targetSection) {
+                            section.classList.add('active');
+                        }
+                    });
+                    
+                    // Jika berpindah ke section simulasi, render ulang
+                    if (targetSection === 'simulation') {
+                        setTimeout(() => {
+                            simulationRenderer.setSize(
+                                document.getElementById('simulation-container').clientWidth,
+                                document.getElementById('simulation-container').clientHeight
+                            );
+                        }, 100);
+                    }
+                });
+            });
+            
+            // Event listener untuk prefiks
+            const prefixItems = document.querySelectorAll('.prefix-item');
+            prefixItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const prefix = this.getAttribute('data-prefix');
+                    showAlkaneFromPrefix(prefix);
+                });
+            });
+
+            // quick open game button
+            const quick = document.getElementById('open-game-quick');
+            if (quick) {
+                quick.addEventListener('click', function() {
+                    document.querySelector('.nav-btn[data-section="game"]').click();
+                    // show lobby view
+                    const wrapper = document.getElementById('game-rounds-wrapper');
+                    renderGameLobby(wrapper);
+                    document.getElementById('debug-panel').style.display = 'block';
+                    document.getElementById('debug-panel').textContent = 'debug: opened game lobby';
+                });
+            }
+        }
+
+        // Inisialisasi visualisasi 3D
+        function init3DVisualization() {
+            // Setup scene, camera, renderer
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a1a2e);
+            
+            const container = document.getElementById('molecule-container');
+            camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.z = 5;
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setClearColor(0x111428);
+            renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(renderer.domElement);
+            
+            // Kontrol orbit
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+
+            console.log('3D viewer initialized, renderer dom ready:', renderer.domElement ? true : false);
+            
+            // Pencahayaan
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 10, 7);
+            scene.add(directionalLight);
+            
+            // Render molekul awal
+            createMolecule(currentCarbonCount);
+            
+            // Animasi
+            // start render loop
+            if (typeof animate === 'function') animate();
+            
+            // Event listener untuk kontrol molekul
+            document.getElementById('add-carbon').addEventListener('click', function() {
+                if (currentCarbonCount < 8) {
+                    currentCarbonCount++;
+                    createMolecule(currentCarbonCount);
+                    updateAlkaneInfo(currentCarbonCount);
+                }
+            });
+            
+            document.getElementById('remove-carbon').addEventListener('click', function() {
+                if (currentCarbonCount > 1) {
+                    currentCarbonCount--;
+                    createMolecule(currentCarbonCount);
+                    updateAlkaneInfo(currentCarbonCount);
+                }
+            });
+            
+            document.getElementById('reset-molecule').addEventListener('click', function() {
+                currentCarbonCount = 1;
+                createMolecule(currentCarbonCount);
+                updateAlkaneInfo(currentCarbonCount);
+            });
+
+            // Autorotate toggle & focus
+            const autoBtn = document.getElementById('toggle-autorotate');
+            if (autoBtn) {
+                autoBtn.addEventListener('click', function() {
+                    autoRotate = !autoRotate;
+                    autoBtn.textContent = autoRotate ? 'Auto-Rotate: ON' : 'Auto-Rotate: OFF';
+                });
+                autoBtn.textContent = autoRotate ? 'Auto-Rotate: ON' : 'Auto-Rotate: OFF';
+            }
+
+            const focusBtn = document.getElementById('focus-molecule');
+            if (focusBtn) {
+                focusBtn.addEventListener('click', function() {
+                    if (currentMolecule && typeof fitCameraToObject === 'function') fitCameraToObject(currentMolecule, camera, controls);
+                });
+            }
+            
+            // Responsif
+            window.addEventListener('resize', function() {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
+        }
+
+        // Inisialisasi simulasi
+        function initSimulation() {
+            // Setup scene, camera, renderer untuk simulasi
+            simulationScene = new THREE.Scene();
+            simulationScene.background = new THREE.Color(0x1a1a2e);
+            
+            const container = document.getElementById('simulation-container');
+            simulationCamera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            simulationCamera.position.z = 5;
+            
+            simulationRenderer = new THREE.WebGLRenderer({ antialias: true });
+            simulationRenderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(simulationRenderer.domElement);
+            
+            // Kontrol orbit
+            simulationControls = new THREE.OrbitControls(simulationCamera, simulationRenderer.domElement);
+            simulationControls.enableDamping = true;
+            simulationControls.dampingFactor = 0.05;
+            
+            // Pencahayaan
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            simulationScene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 10, 7);
+            simulationScene.add(directionalLight);
+            
+            // Render molekul untuk simulasi
+            createSimulationMolecule(5);
+            
+            // Animasi simulasi
+            animateSimulation();
+            
+            // Event listener untuk kontrol simulasi
+            document.getElementById('show-bonds').addEventListener('click', function() {
+                highlightBonds();
+            });
+            
+            document.getElementById('hide-hydrogen').addEventListener('click', function() {
+                hideHydrogenAtoms();
+            });
+            
+            document.getElementById('show-all').addEventListener('click', function() {
+                showAllAtoms();
+            });
+            
+            // Responsif
+            window.addEventListener('resize', function() {
+                simulationCamera.aspect = container.clientWidth / container.clientHeight;
+                simulationCamera.updateProjectionMatrix();
+                simulationRenderer.setSize(container.clientWidth, container.clientHeight);
+            });
+        }
+
+        // Inisialisasi permainan
+        function initGame() {
+            // Event listener untuk tombol periksa jawaban
+            // Show interactive lobby first
+            const wrapper = document.getElementById('game-rounds-wrapper');
+            // ensure state indicates no round selected
+            if (!gameState) gameState = { currentRound: null, currentBabakIndex: 0, answers: [], roundConclusions: {1:'',2:'',3:''} };
+            gameState.currentRound = null;
+            renderGameLobby(wrapper);
+            // Update total rounds display
+            document.getElementById('total-rounds').textContent = '3';
+            // add small note for total questions
+            document.getElementById('total-questions').textContent = gameQuestions.length;
+        }
+
+        // Inisialisasi refleksi
+        function initReflection() {
+            document.getElementById('submit-reflection').addEventListener('click', function() {
+                // Tampilkan sertifikat
+                document.getElementById('certificate').classList.add('active');
+                
+                // Tampilkan nama siswa (dalam implementasi nyata, ini bisa diisi dari input)
+                document.getElementById('student-name').textContent = "Eksplorator Alkana";
+                document.getElementById('certificate-score').textContent = gameScore;
+                
+                // Scroll ke sertifikat
+                document.getElementById('certificate').scrollIntoView({ behavior: 'smooth' });
+            });
+        }
+
+        // Fungsi untuk membuat molekul berdasarkan jumlah atom karbon (lebih detail, interaktif)
+    function createMolecule(carbonCount, branches = []) {
+            // Hapus molekul sebelumnya
+            if (currentMolecule) {
+                scene.remove(currentMolecule);
+            }
+
+            atomMeshes = [];
+            bondMeshes = [];
+
+            const molecule = new THREE.Group();
+
+            // positions
+            const carbonPositions = [];
+            for (let i = 0; i < carbonCount; i++) {
+                const x = i * BOND_LENGTH_C_C - (carbonCount-1)*BOND_LENGTH_C_C/2;
+                carbonPositions.push(new THREE.Vector3(x, 0, 0));
+            }
+
+            // Buat atom karbon
+            carbonPositions.forEach((pos, i) => {
+                const carbon = createAtom(0x333333, 0.4, pos.x, pos.y, pos.z);
+                carbon.userData = { label: 'C (atom ' + (i+1) + ')', connectedBonds: [] };
+                molecule.add(carbon);
+                atomMeshes.push(carbon);
+            });
+
+            // Buat ikatan antara karbon
+            for (let i = 0; i < carbonPositions.length - 1; i++) {
+                const start = carbonPositions[i];
+                const end = carbonPositions[i+1];
+                const bond = createBondBetween(start, end, 0.08, 0xcccccc);
+                molecule.add(bond);
+            }
+
+            // Buat atom hidrogen dengan pola lebih detil: ujung = CH3 (3 H), tengah = CH2 (2 H)
+            for (let i = 0; i < carbonPositions.length; i++) {
+                const carbonPos = carbonPositions[i];
+                const carbonMesh = atomMeshes[i];
+                carbonMesh.userData.connectedBonds = carbonMesh.userData.connectedBonds || [];
+
+                if (carbonCount === 1) {
+                    // Metana CH4
+                    const hs = [
+                        new THREE.Vector3(carbonPos.x + BOND_LENGTH_C_H, carbonPos.y, carbonPos.z),
+                        new THREE.Vector3(carbonPos.x - BOND_LENGTH_C_H, carbonPos.y, carbonPos.z),
+                        new THREE.Vector3(carbonPos.x, carbonPos.y + BOND_LENGTH_C_H, carbonPos.z),
+                        new THREE.Vector3(carbonPos.x, carbonPos.y, carbonPos.z + BOND_LENGTH_C_H)
+                    ];
+                    hs.forEach(hPos => {
+                        const h = createAtom(0xffffff, 0.18, hPos.x, hPos.y, hPos.z);
+                        h.userData = { label: 'H', connectedBonds: [] };
+                        molecule.add(h);
+                        atomMeshes.push(h);
+                        const bond = createBondBetween(carbonPos, h.position, 0.05, 0x66bbff); // blueish C-H
+                        molecule.add(bond);
+                        carbonMesh.userData.connectedBonds.push(bond);
+                        h.userData.connectedBonds.push(bond);
+                    });
+                    addLabelToMolecule(molecule, carbonPos, 'CH₄');
+                } else if (i === 0 || i === carbonCount - 1) {
+                    // ujung: CH3 (3 H)
+                    const dir = i === 0 ? -1 : 1;
+                    const hs = [
+                        new THREE.Vector3(carbonPos.x + dir * BOND_LENGTH_C_H, carbonPos.y, carbonPos.z),
+                        new THREE.Vector3(carbonPos.x, carbonPos.y + BOND_LENGTH_C_H, carbonPos.z),
+                        new THREE.Vector3(carbonPos.x, carbonPos.y, carbonPos.z + BOND_LENGTH_C_H)
+                    ];
+                    hs.forEach(hPos => {
+                        const h = createAtom(0xffffff, 0.16, hPos.x, hPos.y, hPos.z);
+                        h.userData = { label: 'H', connectedBonds: [] };
+                        molecule.add(h);
+                        atomMeshes.push(h);
+                        const bond = createBondBetween(carbonPos, h.position, 0.05, 0x66bbff);
+                        molecule.add(bond);
+                        carbonMesh.userData.connectedBonds.push(bond);
+                        h.userData.connectedBonds.push(bond);
+                    });
+                    addLabelToMolecule(molecule, carbonPos, 'CH₃');
+                } else {
+                    // tengah: CH2 (2 H)
+                    const hs = [
+                        new THREE.Vector3(carbonPos.x, carbonPos.y + BOND_LENGTH_C_H, carbonPos.z),
+                        new THREE.Vector3(carbonPos.x, carbonPos.y, carbonPos.z + BOND_LENGTH_C_H)
+                    ];
+                    hs.forEach(hPos => {
+                        const h = createAtom(0xffffff, 0.16, hPos.x, hPos.y, hPos.z);
+                        h.userData = { label: 'H', connectedBonds: [] };
+                        molecule.add(h);
+                        atomMeshes.push(h);
+                        const bond = createBondBetween(carbonPos, h.position, 0.05, 0x66bbff);
+                        molecule.add(bond);
+                        carbonMesh.userData.connectedBonds.push(bond);
+                        h.userData.connectedBonds.push(bond);
+                    });
+                    addLabelToMolecule(molecule, carbonPos, 'CH₂');
+                }
+            }
+
+            // Render branches (mis. metil) jika ada
+            if (Array.isArray(branches) && branches.length > 0) {
+                branches.forEach((br, idx) => {
+                    try {
+                        const posIndex = Number(br.pos) - 1;
+                        if (isNaN(posIndex) || posIndex < 0 || posIndex >= carbonPositions.length) return;
+                        const basePos = carbonPositions[posIndex];
+                        // choose offset direction so branches are visible (alternate +/- z)
+                        const dirZ = (posIndex % 2 === 0) ? 1 : -1;
+                        const branchOffset = new THREE.Vector3(0, 0, dirZ * BOND_LENGTH_C_C);
+                        const branchCarbonPos = basePos.clone().add(branchOffset);
+
+                        const branchCarbon = createAtom(0x333333, 0.34, branchCarbonPos.x, branchCarbonPos.y, branchCarbonPos.z);
+                        branchCarbon.userData = { label: 'C (cab)' + (posIndex+1), connectedBonds: [] };
+                        molecule.add(branchCarbon);
+                        atomMeshes.push(branchCarbon);
+
+                        // bond to main chain
+                        const bBond = createBondBetween(basePos, branchCarbon.position, 0.07, 0xffcc66);
+                        molecule.add(bBond);
+                        // attach connected bonds to meshes
+                        const baseMesh = atomMeshes[posIndex];
+                        if (baseMesh && baseMesh.userData) baseMesh.userData.connectedBonds.push(bBond);
+                        if (branchCarbon.userData) branchCarbon.userData.connectedBonds.push(bBond);
+
+                        // add hydrogens for CH3 on branch carbon
+                        const h1 = createAtom(0xffffff, 0.15, branchCarbonPos.x + BOND_LENGTH_C_H, branchCarbonPos.y, branchCarbonPos.z);
+                        const h2 = createAtom(0xffffff, 0.15, branchCarbonPos.x, branchCarbonPos.y + BOND_LENGTH_C_H, branchCarbonPos.z);
+                        const h3 = createAtom(0xffffff, 0.15, branchCarbonPos.x, branchCarbonPos.y, branchCarbonPos.z + (dirZ * BOND_LENGTH_C_H));
+                        [h1,h2,h3].forEach(h => {
+                            h.userData = { label: 'H', connectedBonds: [] };
+                            molecule.add(h);
+                            atomMeshes.push(h);
+                            const hb = createBondBetween(branchCarbon.position, h.position, 0.045, 0x66bbff);
+                            molecule.add(hb);
+                            if (branchCarbon.userData) branchCarbon.userData.connectedBonds.push(hb);
+                            h.userData.connectedBonds.push(hb);
+                        });
+
+                        addLabelToMolecule(molecule, branchCarbonPos, 'CH₃');
+                    } catch (err) {
+                        console.warn('branch render error', err);
+                    }
+                });
+            }
+
+            scene.add(molecule);
+            currentMolecule = molecule;
+
+            // adjust camera to fit new molecule
+            if (typeof fitCameraToObject === 'function') fitCameraToObject(currentMolecule, camera, controls);
+        }
+
+        // Fit camera to object bounding box
+        function fitCameraToObject(object, camera, controls) {
+            try {
+                const box = new THREE.Box3().setFromObject(object);
+                const size = box.getSize(new THREE.Vector3()).length();
+                const center = box.getCenter(new THREE.Vector3());
+                const distance = Math.max(size * 1.2, 4);
+                camera.position.set(center.x, center.y, center.z + distance);
+                camera.lookAt(center);
+                if (controls) {
+                    controls.target.copy(center);
+                    controls.update();
+                }
+            } catch (e) {
+                // ignore
+            }
+        }
+
+        // Fungsi untuk membuat molekul simulasi
+        function createSimulationMolecule(carbonCount) {
+            // Implementasi serupa dengan createMolecule, tetapi untuk scene simulasi
+            // Untuk demo, kita buat molekul pentana
+            const molecule = new THREE.Group();
+            simulationAtomMeshes = [];
+            simulationBondMeshes = [];
+            
+            // Buat atom karbon
+            for (let i = 0; i < carbonCount; i++) {
+                const carbon = createAtom(0x333333, 0.4, i * BOND_LENGTH_C_C - (carbonCount-1)*BOND_LENGTH_C_C/2, 0, 0);
+                molecule.add(carbon);
+                simulationAtomMeshes.push(carbon);
+            }
+            
+            // Buat ikatan antara karbon
+            for (let i = 0; i < carbonCount - 1; i++) {
+                const start = new THREE.Vector3(i * BOND_LENGTH_C_C - (carbonCount-1)*BOND_LENGTH_C_C/2, 0, 0);
+                const end = new THREE.Vector3((i+1) * BOND_LENGTH_C_C - (carbonCount-1)*BOND_LENGTH_C_C/2, 0, 0);
+                const bond = createBond(start, end, 0.08);
+                molecule.add(bond);
+                simulationBondMeshes.push(bond);
+            }
+            
+            // Buat atom hidrogen (implementasi sederhana)
+            // Untuk demo, kita buat hidrogen hanya di beberapa posisi
+            const firstCarbonPos = new THREE.Vector3(-(carbonCount-1)*BOND_LENGTH_C_C/2, 0, 0);
+            const h1 = createAtom(0xffffff, 0.2, firstCarbonPos.x - BOND_LENGTH_C_H, firstCarbonPos.y, firstCarbonPos.z);
+            molecule.add(h1);
+            simulationAtomMeshes.push(h1);
+            const bond1 = createBond(firstCarbonPos, h1.position);
+            molecule.add(bond1);
+            simulationBondMeshes.push(bond1);
+            
+            const lastCarbonPos = new THREE.Vector3((carbonCount-1)*BOND_LENGTH_C_C/2, 0, 0);
+            const h2 = createAtom(0xffffff, 0.2, lastCarbonPos.x + BOND_LENGTH_C_H, lastCarbonPos.y, lastCarbonPos.z);
+            molecule.add(h2);
+            simulationAtomMeshes.push(h2);
+            const bond2 = createBond(lastCarbonPos, h2.position);
+            molecule.add(bond2);
+            simulationBondMeshes.push(bond2);
+            
+            simulationScene.add(molecule);
+        }
+
+        // Simple animation loop for main viewer
+        function animate() {
+            requestAnimationFrame(animate);
+            if (controls) controls.update();
+            // subtle rotation/bob for the current molecule to make it feel alive
+            if (currentMolecule) {
+                currentMolecule.rotation.y += 0.0025;
+                const t = Date.now() * 0.001;
+                currentMolecule.position.y = Math.sin(t) * 0.02;
+            }
+            // auto-rotate camera around target
+            if (autoRotate && controls && controls.target) {
+                const t = Date.now() * 0.0002;
+                const radius = camera.position.length();
+                camera.position.x = Math.cos(t) * radius;
+                camera.position.z = Math.sin(t) * radius;
+                camera.lookAt(controls.target);
+            }
+            if (renderer && scene && camera) renderer.render(scene, camera);
+        }
+
+        // Simple animation loop for simulation viewer
+        function animateSimulation() {
+            requestAnimationFrame(animateSimulation);
+            if (simulationControls) simulationControls.update();
+            if (simulationRenderer && simulationScene && simulationCamera) simulationRenderer.render(simulationScene, simulationCamera);
+        }
+
+        // Simulation control helpers
+        function highlightBonds() {
+            simulationBondMeshes.forEach(b => {
+                if (b.material) b.material.emissive && b.material.emissive.set(0x4a9cff);
+            });
+        }
+
+        function hideHydrogenAtoms() {
+            simulationAtomMeshes.forEach(a => {
+                // assume hydrogens are smaller (size ~0.16-0.2) based on creation
+                if (a.geometry && a.geometry.parameters && a.geometry.parameters.radius <= 0.2) {
+                    a.visible = false;
+                }
+            });
+        }
+
+        function showAllAtoms() {
+            simulationAtomMeshes.forEach(a => a.visible = true);
+            simulationBondMeshes.forEach(b => {
+                if (b.material && b.material.emissive) b.material.emissive.set(0x000000);
+            });
+        }
+
+        // Fungsi untuk membuat atom
+        function createAtom(color, size, x, y, z) {
+            const geometry = new THREE.SphereGeometry(size, ATOM_SEGMENTS, ATOM_SEGMENTS);
+            const material = new THREE.MeshStandardMaterial({ color: color, metalness: 0.2, roughness: 0.5, emissive: 0x000000 });
+            const atom = new THREE.Mesh(geometry, material);
+            atom.position.set(x, y, z);
+            atom.userData = atom.userData || {};
+            atom.userData._baseScale = new THREE.Vector3(1,1,1);
+            return atom;
+        }
+
+        // Tambahkan label teks sederhana (2D HTML overlay) untuk setiap grup atom
+        function addLabelToMolecule(moleculeGroup, positionVec3, text) {
+            // We'll attach a simple sprite-like object using CSS2D-like approach
+            // Create a plane with canvas texture showing the text
+            const canvas = document.createElement('canvas');
+            canvas.width = 128;
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = 'rgba(0,0,0,0.6)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.font = '20px sans-serif';
+            ctx.fillStyle = '#fff';
+            ctx.textAlign = 'center';
+            ctx.fillText(text, canvas.width / 2, canvas.height / 2 + 7);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const material = new THREE.SpriteMaterial({ map: texture, depthTest: false });
+            const sprite = new THREE.Sprite(material);
+            sprite.scale.set(0.9, 0.45, 1);
+            sprite.position.copy(positionVec3.clone().add(new THREE.Vector3(0, 0.7, 0)));
+            moleculeGroup.add(sprite);
+        }
+
+        // Fungsi untuk membuat ikatan (mesh saja)
+        function createBond(start, end, radius = 0.05, color = 0x888888) {
+            const direction = new THREE.Vector3().subVectors(end, start);
+            const length = direction.length();
+            const geometry = new THREE.CylinderGeometry(radius, radius, length, BOND_CYL_SEGMENTS);
+            geometry.translate(0, length/2, 0);
+
+            const material = new THREE.MeshStandardMaterial({ color: color, metalness: 0.1, roughness: 0.6, emissive: 0x000000 });
+            const bond = new THREE.Mesh(geometry, material);
+            bond.userData = bond.userData || {};
+            bond.userData._baseRadius = radius;
+            bond.position.copy(start);
+            bond.lookAt(end);
+            return bond;
+        }
+
+        // Create bond and register for interactivity
+        function createBondBetween(start, end, radius = 0.06, color = 0x888888) {
+            const bond = createBond(start, end, radius, color);
+            bondMeshes.push(bond);
+            return bond;
+        }
+
+        // Fungsi untuk memperbarui informasi alkana
+        function updateAlkaneInfo(carbonCount) {
+            const alkaneNames = ["", "Metana", "Etana", "Propana", "Butana", "Pentana", "Heksana", "Heptana", "Oktana"];
+            const alkaneFormulas = ["", "CH₄", "C₂H₆", "C₃H₈", "C₄H₁₀", "C₅H₁₂", "C₆H₁₄", "C₇H₁₆", "C₈H₁₈"];
+            
+            document.getElementById('alkane-name').textContent = alkaneNames[carbonCount] + " (" + alkaneFormulas[carbonCount] + ")";
+            document.getElementById('molecular-formula').textContent = alkaneFormulas[carbonCount];
+            
+            let description = "Alkana dengan " + carbonCount + " atom karbon. ";
+            description += "Rumus molekul: " + alkaneFormulas[carbonCount] + ". ";
+            description += "Struktur rantai lurus dengan ikatan tunggal antara atom karbon.";
+            
+            document.getElementById('alkane-description').textContent = description;
+        }
+
+        // Render dynamic rounds (clean implementation)
+        function renderGameRounds() {
+            const wrapper = document.getElementById('game-rounds-wrapper');
+            wrapper.innerHTML = '';
+
+            const rounds = [1,2,3].map(r => ({ round: r, questions: gameQuestions.filter(q => q.round === r) }));
+
+            rounds.forEach(rObj => {
+                const roundDiv = document.createElement('div');
+                roundDiv.className = 'game-container';
+                roundDiv.id = `game-round-${rObj.round}`;
+                if (rObj.round !== 1) roundDiv.style.display = 'none';
+
+                const h3 = document.createElement('h3');
+                h3.textContent = `Ronde ${rObj.round}: ${rObj.round===1? 'Alkana Rantai Panjang': rObj.round===2? 'Alkana Rantai Bercabang':'Campuran'}`;
+                roundDiv.appendChild(h3);
+
+                rObj.questions.forEach((q, idx) => {
+                    const qIndex = gameQuestions.indexOf(q);
+                    const questionEl = document.createElement('div');
+                    questionEl.className = 'game-question';
+                    questionEl.textContent = `Babak ${idx+1}: ${q.prompt}`;
+
+                    // controls row: 3D, Hint, Timer
+                    const controlRow = document.createElement('div');
+                    controlRow.style.marginTop = '8px';
+
+                    const btn3d = document.createElement('button');
+                    btn3d.className = 'control-btn';
+                    btn3d.textContent = 'Tampilkan 3D';
+                    btn3d.style.marginRight = '8px';
+                    btn3d.addEventListener('click', () => { showQuestionStructure(q); startQuestionTimer(questionEl, 90); });
+                    controlRow.appendChild(btn3d);
+
+                    const hintBtn = document.createElement('button');
+                    hintBtn.className = 'control-btn';
+                    hintBtn.textContent = 'Hint';
+                    hintBtn.style.marginRight = '8px';
+                    hintBtn.addEventListener('click', () => toggleHint(questionEl, q.hint || 'Perhatikan jumlah atom C dan posisi cabang.'));
+                    controlRow.appendChild(hintBtn);
+
+                    const timerBubble = document.createElement('span');
+                    timerBubble.className = 'timer-bubble';
+                    timerBubble.textContent = '--:--';
+                    controlRow.appendChild(timerBubble);
+
+                    questionEl.appendChild(controlRow);
+
+                    // small 2D diagram helper
+                    const diagram = generate2DDiagramForQuestion(q);
+                    const diagramWrapper = document.createElement('div');
+                    diagramWrapper.className = 'diagram-2d';
+                    diagramWrapper.appendChild(diagram);
+                    questionEl.appendChild(diagramWrapper);
+
+                    const optionsGrid = document.createElement('div');
+                    optionsGrid.className = 'game-options';
+                    q.choices.forEach(choice => {
+                        const opt = document.createElement('div');
+                        opt.className = 'game-option';
+                        opt.textContent = choice;
+                        opt.dataset.questionIndex = qIndex;
+                        opt.dataset.choice = choice;
+                        opt.addEventListener('click', onGameOptionClick);
+                        optionsGrid.appendChild(opt);
+                    });
+
+                    const feedback = document.createElement('div');
+                    feedback.className = 'feedback';
+                    feedback.style.display = 'none';
+
+                    const controls = document.createElement('div');
+                    controls.className = 'game-controls';
+                    const checkBtn = document.createElement('button');
+                    checkBtn.className = 'game-btn';
+                    checkBtn.textContent = 'Periksa Jawaban';
+                    checkBtn.dataset.questionIndex = qIndex;
+                    checkBtn.addEventListener('click', checkQuestionAnswer);
+                    controls.appendChild(checkBtn);
+
+                    // hint box (hidden by default)
+                    const hintBox = document.createElement('div');
+                    hintBox.className = 'hint-box';
+                    hintBox.textContent = q.hint || 'Tidak ada hint tersedia.';
+                    questionEl.appendChild(hintBox);
+
+                    // attach timer handles
+                    questionEl._timerBubble = timerBubble;
+                    questionEl._timerId = null;
+
+                    questionEl.appendChild(optionsGrid);
+                    questionEl.appendChild(controls);
+                    questionEl.appendChild(feedback);
+                    roundDiv.appendChild(questionEl);
+                });
+
+                // Conclusion textarea
+                const conclDiv = document.createElement('div');
+                conclDiv.className = 'reflection-section';
+                conclDiv.innerHTML = `<h4>Kesimpulan Ronde ${rObj.round}</h4>`;
+                const textarea = document.createElement('textarea');
+                textarea.className = 'reflection-input';
+                textarea.placeholder = 'Tulis kesimpulanmu untuk ronde ini...';
+                textarea.dataset.round = rObj.round;
+                conclDiv.appendChild(textarea);
+
+                const nextBtn = document.createElement('button');
+                nextBtn.className = 'game-btn next';
+                nextBtn.textContent = rObj.round === 3 ? 'Lihat Hasil' : 'Lanjut ke Ronde Berikutnya';
+                nextBtn.addEventListener('click', () => proceedToNextRound(rObj.round));
+                conclDiv.appendChild(nextBtn);
+
+                roundDiv.appendChild(conclDiv);
+                wrapper.appendChild(roundDiv);
+            });
+        }
+
+        // Generate a small SVG 2D diagram for a question (heuristic)
+        function generate2DDiagramForQuestion(q) {
+            const svgNS = 'http://www.w3.org/2000/svg';
+            const svg = document.createElementNS(svgNS, 'svg');
+            svg.setAttribute('width', '220');
+            svg.setAttribute('height', '80');
+
+            // heuristic: look for numbers like '3 atom C' or names like '3-metilpentana' to draw chain
+            let chainLength = null;
+            const m = q.prompt.match(/(\d+) atom C/);
+            if (m) chainLength = parseInt(m[1], 10);
+
+            // fallback for names
+            if (!chainLength) {
+                const nameMatch = q.prompt.match(/(\d)-?metil|pentana|butana|heksana|propana|etana|metana/gi);
+                // quick simple heuristic - use 5 for pentana mentions
+                if (/pentana/i.test(q.prompt)) chainLength = 5;
+                else if (/butana/i.test(q.prompt)) chainLength = 4;
+                else if (/heksana/i.test(q.prompt)) chainLength = 6;
+                else if (/propana/i.test(q.prompt)) chainLength = 3;
+                else if (/etana/i.test(q.prompt)) chainLength = 2;
+                else if (/metana/i.test(q.prompt)) chainLength = 1;
+            }
+
+            if (!chainLength) chainLength = 5; // default visual
+
+            const startX = 12;
+            const startY = 40;
+            const gap = 32;
+
+            for (let i = 0; i < chainLength; i++) {
+                const cx = startX + i * gap;
+                const circle = document.createElementNS(svgNS, 'circle');
+                circle.setAttribute('cx', cx);
+                circle.setAttribute('cy', startY);
+                circle.setAttribute('r', 8);
+                circle.setAttribute('fill', i===0||i===chainLength-1 ? '#333' : '#444');
+                svg.appendChild(circle);
+
+                // label CH3 or CH2
+                const label = document.createElementNS(svgNS, 'text');
+                label.setAttribute('x', cx);
+                label.setAttribute('y', startY - 14);
+                label.setAttribute('text-anchor', 'middle');
+                label.setAttribute('fill', '#fff');
+                label.setAttribute('font-size', '10');
+                label.textContent = chainLength === 1 ? 'CH₄' : (i===0||i===chainLength-1 ? 'CH₃' : 'CH₂');
+                svg.appendChild(label);
+
+                if (i > 0) {
+                    const prevX = startX + (i-1) * gap;
+                    const line = document.createElementNS(svgNS, 'line');
+                    line.setAttribute('x1', prevX + 8);
+                    line.setAttribute('y1', startY);
+                    line.setAttribute('x2', cx - 8);
+                    line.setAttribute('y2', startY);
+                    line.setAttribute('stroke', '#bbb');
+                    line.setAttribute('stroke-width', '2');
+                    svg.appendChild(line);
+                }
+            }
+
+            // If the prompt mentions 'metil' with a number, draw a small branch marker
+            const metilMatch = q.prompt.match(/(\d)-?metil/);
+            if (metilMatch) {
+                const pos = Number(metilMatch[1]) - 1;
+                const branchX = startX + pos * gap;
+                const branchLine = document.createElementNS(svgNS, 'line');
+                branchLine.setAttribute('x1', branchX);
+                branchLine.setAttribute('y1', startY - 8);
+                branchLine.setAttribute('x2', branchX);
+                branchLine.setAttribute('y2', startY - 28);
+                branchLine.setAttribute('stroke', '#ffcc00');
+                branchLine.setAttribute('stroke-width', '2');
+                svg.appendChild(branchLine);
+
+                const branchCircle = document.createElementNS(svgNS, 'circle');
+                branchCircle.setAttribute('cx', branchX);
+                branchCircle.setAttribute('cy', startY - 36);
+                branchCircle.setAttribute('r', 6);
+                branchCircle.setAttribute('fill', '#333');
+                svg.appendChild(branchCircle);
+
+                const bLabel = document.createElementNS(svgNS, 'text');
+                bLabel.setAttribute('x', branchX);
+                bLabel.setAttribute('y', startY - 44);
+                bLabel.setAttribute('text-anchor', 'middle');
+                bLabel.setAttribute('fill', '#fff');
+                bLabel.setAttribute('font-size', '10');
+                bLabel.textContent = 'CH₃';
+                svg.appendChild(bLabel);
+            }
+
+            return svg;
+        }
+
+        // Small game UI helpers: lobby, hint, and timer
+        function renderGameLobby(container) {
+            container.innerHTML = '';
+            const lobby = document.createElement('div');
+            lobby.className = 'game-lobby';
+            for (let r = 1; r <= 3; r++) {
+                const card = document.createElement('div');
+                card.className = 'round-card';
+                const title = document.createElement('div');
+                title.className = 'rc-title';
+                title.textContent = `Ronde ${r}`;
+                const desc = document.createElement('div');
+                desc.className = 'rc-desc';
+                const topics = r === 1 ? 'Rantai lurus' : (r === 2 ? 'Rantai bercabang' : 'Campuran & tantangan');
+                desc.textContent = topics;
+                const progress = document.createElement('div');
+                progress.className = 'rc-progress';
+                const fill = document.createElement('div');
+                fill.className = 'rc-fill';
+                const startIdx = (r - 1) * 3;
+                let completed = 0;
+                for (let i = 0; i < 3; i++) if (gameState.answers[startIdx + i] !== undefined) completed++;
+                const pct = Math.round((completed / 3) * 100);
+                fill.style.width = pct + '%';
+                progress.appendChild(fill);
+
+                const openBtn = document.createElement('button');
+                openBtn.className = 'control-btn';
+                openBtn.textContent = completed === 3 ? 'Ulangi Ronde' : 'Mulai Ronde';
+                openBtn.onclick = () => {
+                    gameState.currentRound = r;
+                    renderGameRounds();
+                    document.getElementById('game-rounds-wrapper').scrollIntoView({behavior:'smooth'});
+                };
+
+                card.appendChild(title);
+                card.appendChild(desc);
+                card.appendChild(progress);
+                card.appendChild(openBtn);
+                lobby.appendChild(card);
+            }
+            container.appendChild(lobby);
+        }
+
+        function toggleHint(questionEl, text) {
+            const hint = questionEl.querySelector('.hint-box');
+            if (!hint) return;
+            if (hint.style.display === 'block') hint.style.display = 'none';
+            else {
+                hint.style.display = 'block';
+                hint.textContent = text;
+                hint.animate([{opacity:0, transform:'translateY(-6px)'},{opacity:1, transform:'translateY(0)'}], {duration:240, easing:'ease-out'});
+            }
+        }
+
+        function startQuestionTimer(questionEl, seconds = 90) {
+            if (!questionEl) return;
+            clearInterval(questionEl._timerId);
+            let remaining = seconds;
+            const bubble = questionEl._timerBubble;
+            function tick(){
+                const mm = Math.floor(remaining/60).toString().padStart(2,'0');
+                const ss = (remaining%60).toString().padStart(2,'0');
+                if (bubble) bubble.textContent = `${mm}:${ss}`;
+                remaining--;
+                if (remaining < 0) {
+                    clearInterval(questionEl._timerId);
+                    if (bubble) bubble.textContent = '00:00';
+                    const qIdx = findQuestionIndexByPrompt(questionEl.textContent);
+                    if (qIdx !== -1 && gameState.answers.findIndex(a=>a.questionIndex===qIdx) === -1) {
+                        // mark as incorrect automatically
+                        markAnswer(qIdx, false, 'Waktu habis');
+                    }
+                }
+            }
+            tick();
+            questionEl._timerId = setInterval(tick, 1000);
+        }
+
+        function findQuestionIndexByPrompt(text) {
+            if (!text) return -1;
+            for (let i=0;i<gameQuestions.length;i++) if (text.indexOf(gameQuestions[i].prompt) !== -1) return i;
+            return -1;
+        }
+
+        function markAnswer(qIdx, correct, reason) {
+            // update state
+            gameState.answers.push({ questionIndex: qIdx, selected: null, correct: correct });
+            // find the corresponding visual question and show feedback
+            const wrapper = document.getElementById('game-rounds-wrapper');
+            const qEls = wrapper.querySelectorAll('.game-question');
+            qEls.forEach(qEl => {
+                if (qEl.textContent.indexOf(gameQuestions[qIdx].prompt) !== -1) {
+                    qEl.style.border = correct ? '2px solid rgba(54,200,120,0.6)' : '2px solid rgba(220,50,50,0.6)';
+                    const fb = document.createElement('div');
+                    fb.style.marginTop = '10px';
+                    fb.style.padding = '8px';
+                    fb.style.borderRadius = '6px';
+                    fb.style.background = correct ? 'rgba(54,200,120,0.08)' : 'rgba(220,50,50,0.06)';
+                    fb.textContent = correct ? 'Waktu habis. Jawaban dianggap salah.' : 'Waktu habis. Jawaban dianggap salah.';
+                    qEl.appendChild(fb);
+                }
+            });
+        }
+
+        // Render a question's structure in 3D viewer. Parse simple branch like '2-metil' or '3-metil'.
+        function showQuestionStructure(q) {
+            console.log('showQuestionStructure for:', q.prompt);
+            // simple parser: find main chain length and branches
+            let mainChain = null;
+            const m = q.prompt.match(/(\d+) atom C/);
+            if (m) mainChain = parseInt(m[1], 10);
+            if (!mainChain) {
+                if (/pentana/i.test(q.prompt)) mainChain = 5;
+                else if (/butana/i.test(q.prompt)) mainChain = 4;
+                else if (/heksana/i.test(q.prompt)) mainChain = 6;
+                else if (/propana/i.test(q.prompt)) mainChain = 3;
+                else if (/etana/i.test(q.prompt)) mainChain = 2;
+                else if (/metana/i.test(q.prompt)) mainChain = 1;
+            }
+
+            // detect metil positions
+            const branches = [];
+            const re = /(\d)-?metil/gi;
+            let bm;
+            while ((bm = re.exec(q.prompt)) !== null) {
+                branches.push({ pos: Number(bm[1]), type: 'metil' });
+            }
+
+            if (!mainChain) mainChain = 5;
+
+            // call createMolecule with branch data
+            createMolecule(mainChain, branches);
+            // ensure viewer resets camera a bit
+            camera.position.set(0, 0, Math.max(4, mainChain));
+            controls.update();
+        }
+
+        // Fungsi untuk menampilkan alkana berdasarkan prefiks
+        function showAlkaneFromPrefix(prefix) {
+            const prefixMap = {
+                "meth": 1,
+                "eth": 2,
+                "prop": 3,
+                "but": 4,
+                "pent": 5,
+                "hex": 6,
+                "hept": 7,
+                "oct": 8
+            };
+
+            const carbonCount = prefixMap[prefix];
+            if (carbonCount) {
+                // Pindah ke section pengenalan alkana
+                document.querySelector('.nav-btn[data-section="intro"]').click();
+
+                // Update molekul
+                currentCarbonCount = carbonCount;
+                createMolecule(currentCarbonCount);
+                updateAlkaneInfo(currentCarbonCount);
+            }
+        }
+        // (removed duplicate stray UI-builder block)
+
+        function onGameOptionClick(e) {
+            const clicked = e.currentTarget;
+            const container = clicked.parentElement;
+            const siblings = container.querySelectorAll('.game-option');
+            siblings.forEach(s => s.classList.remove('selected'));
+            clicked.classList.add('selected');
+        }
+
+        function checkQuestionAnswer(e) {
+            const btn = e.currentTarget;
+            const qIndex = Number(btn.dataset.questionIndex);
+            const q = gameQuestions[qIndex];
+            const container = btn.closest('.game-question');
+            const options = container.querySelectorAll('.game-option');
+            const feedback = container.querySelector('.feedback');
+            feedback.style.display = 'flex';
+            feedback.innerHTML = '';
+
+            let selected = null;
+            options.forEach(opt => {
+                if (opt.classList.contains('selected')) selected = opt;
+            });
+
+            if (!selected) {
+                feedback.className = 'feedback incorrect';
+                feedback.innerHTML = '<span class="icon">❗</span><span>Silakan pilih jawaban terlebih dahulu.</span>';
+                return;
+            }
+
+            // Mark correct/incorrect visuals
+            options.forEach(opt => {
+                if (opt.textContent === q.answer) {
+                    opt.classList.add('correct');
+                }
+                if (opt.classList.contains('selected') && opt.textContent !== q.answer) {
+                    opt.classList.add('incorrect');
+                }
+                // disable further clicking
+                opt.style.pointerEvents = 'none';
+            });
+
+            const isCorrect = selected.textContent === q.answer;
+            gameState.answers.push({ questionIndex: qIndex, selected: selected.textContent, correct: isCorrect });
+
+            if (isCorrect) {
+                feedback.className = 'feedback correct';
+                feedback.innerHTML = '<span class="icon">✔️</span><span>Jawaban benar! ' + q.hint + '</span>';
+                // audio cue
+                playTone(880, 0.06, 0.02);
+            } else {
+                feedback.className = 'feedback incorrect';
+                feedback.innerHTML = '<span class="icon">✖️</span><span>Salah. Jawaban benar: <strong>' + q.answer + '</strong>. ' + q.hint + '</span>';
+                playTone(220, 0.12, 0.04);
+            }
+
+            // disable check button after checking
+            btn.disabled = true;
+        }
+
+        // small utility for short tones
+        function playTone(freq, dur=0.08, attack=0.01) {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const o = audioCtx.createOscillator();
+                const g = audioCtx.createGain();
+                o.type = 'sine'; o.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                g.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.12, audioCtx.currentTime + attack);
+                g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+                o.connect(g); g.connect(audioCtx.destination);
+                o.start(); o.stop(audioCtx.currentTime + dur + 0.02);
+            } catch (e) { }
+        }
+
+        function proceedToNextRound(currentRoundNumber) {
+            // Ensure all questions in this round have been checked and conclusion entered
+            const roundDiv = document.getElementById(`game-round-${currentRoundNumber}`);
+            const questionEls = roundDiv.querySelectorAll('.game-question');
+            for (let qEl of questionEls) {
+                const checkBtn = qEl.querySelector('.game-controls .game-btn');
+                if (!checkBtn.disabled) {
+                    alert('Selesaikan semua babak pada ronde ini dengan menekan "Periksa Jawaban" pada setiap soal.');
+                    return;
+                }
+            }
+
+            const textarea = roundDiv.querySelector('.reflection-input');
+            if (!textarea.value.trim()) {
+                alert('Tuliskan kesimpulan untuk ronde ini sebelum melanjutkan.');
+                textarea.focus();
+                return;
+            }
+
+            gameState.roundConclusions[currentRoundNumber] = textarea.value.trim();
+
+            // Move to next or show results
+            if (currentRoundNumber < 3) {
+                document.getElementById(`game-round-${currentRoundNumber}`).style.display = 'none';
+                document.getElementById(`game-round-${currentRoundNumber+1}`).style.display = 'block';
+                document.getElementById('current-round').textContent = String(currentRoundNumber+1);
+                const progress = (currentRoundNumber+1) / 3 * 100;
+                document.getElementById('game-progress').style.width = progress + '%';
+                // scroll into view
+                document.getElementById(`game-round-${currentRoundNumber+1}`).scrollIntoView({behavior:'smooth'});
+            } else {
+                // show summary
+                showGameSummary();
+            }
+        }
+
+        function showGameSummary() {
+            // compute score
+            const totalCorrect = gameState.answers.filter(a => a.correct).length;
+            document.getElementById('final-score').textContent = totalCorrect;
+            document.getElementById('total-questions').textContent = gameQuestions.length;
+
+            // show per-round summaries
+            const summaryDiv = document.getElementById('round-summaries');
+            summaryDiv.innerHTML = '';
+            for (let r=1; r<=3; r++) {
+                const block = document.createElement('div');
+                block.innerHTML = `<h4>Ronde ${r} - Kesimpulan:</h4><p>${gameState.roundConclusions[r] || '-'}</p>`;
+                summaryDiv.appendChild(block);
+            }
+
+            // show results section
+            document.getElementById('game-rounds-wrapper').style.display = 'none';
+            document.getElementById('game-conclusion').style.display = 'block';
+            // set detailed message
+            const overall = `Dari permainan ini, kamu mempelajari pola rumus alkana, pemilihan rantai utama dan penomoran cabang. Skor akhir: ${totalCorrect}/${gameQuestions.length}.`;
+            document.getElementById('conclusion-text').innerHTML = overall;
+            // award badge if score high
+            const badgeThreshold = Math.ceil(gameQuestions.length * 0.7); // 70%
+            if (totalCorrect >= badgeThreshold) {
+                burstConfetti(); playTone(1000, 0.15, 0.02);
+                // store badge
+                const badges = JSON.parse(localStorage.getItem('alkana_badges') || '[]');
+                if (!badges.includes('alkana_star')) { badges.push('alkana_star'); localStorage.setItem('alkana_badges', JSON.stringify(badges)); }
+                const badgeMsg = document.createElement('div'); badgeMsg.innerHTML = '<strong>Selamat!</strong> Kamu mendapatkan lencana <em>Eksplorator Alkana</em>.'; badgeMsg.style.marginTop='10px';
+                document.getElementById('game-conclusion').appendChild(badgeMsg);
+            }
+        }
+
+        function nextRound() {
+            document.getElementById('game-round-1').style.display = 'none';
+            document.getElementById('game-round-2').style.display = 'block';
+            document.getElementById('current-round').textContent = '2';
+            document.getElementById('game-progress').style.width = '66%';
+            
+            // Reset seleksi
+            const options = document.querySelectorAll('#game-round-2 .game-option');
+            options.forEach(option => {
+                option.classList.remove('selected', 'correct', 'incorrect');
+            });
+            
+            document.getElementById('check-answer-2').style.display = 'block';
+            document.getElementById('next-round-2').style.display = 'none';
+        }
+
+        function nextRound2() {
+            document.getElementById('game-round-2').style.display = 'none';
+            document.getElementById('game-round-3').style.display = 'block';
+            document.getElementById('current-round').textContent = '3';
+            document.getElementById('game-progress').style.width = '100%';
+            
+            // Reset seleksi
+            const options = document.querySelectorAll('#game-round-3 .game-option');
+            options.forEach(option => {
+                option.classList.remove('selected', 'correct', 'incorrect');
+            });
+            
+            document.getElementById('check-answer-3').style.display = 'block';
+            document.getElementById('show-results').style.display = 'none';
+        }
+
+        function showResults() {
+            document.getElementById('game-round-3').style.display = 'none';
+            document.getElementById('game-conclusion').style.display = 'block';
+            document.getElementById('final-score').textContent = gameScore;
+            
+            // Tampilkan kesimpulan berdasarkan skor
+            let conclusion = "Dari permainan ini, kamu telah belajar bahwa alkana memiliki pola rumus umum <strong>C<sub>n</sub>H<sub>2n+2</sub></strong> ";
+            conclusion += "dan penomoran dimulai dari ujung yang paling dekat dengan cabang. ";
+            
+            if (gameScore === 3) {
+                conclusion += "<strong>Luar biasa! Kamu benar-benar menguasai materi alkana!</strong>";
+            } else if (gameScore === 2) {
+                conclusion += "<strong>Bagus! Hanya sedikit lagi untuk menguasai alkana sepenuhnya!</strong>";
+            } else {
+                conclusion += "<strong>Terus berlatih! Kamu pasti bisa menguasai alkana dengan lebih baik!</strong>";
+            }
+            
+            document.getElementById('conclusion-text').innerHTML = conclusion;
+        }
+
+        // Event listener untuk opsi permainan
+        document.addEventListener('DOMContentLoaded', function() {
+            const gameOptions = document.querySelectorAll('.game-option');
+            gameOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    // Hapus seleksi dari opsi lain dalam container yang sama
+                    const parent = this.parentElement;
+                    const siblings = parent.querySelectorAll('.game-option');
+                    siblings.forEach(sib => sib.classList.remove('selected'));
+                    
+                    // Tandai opsi ini sebagai terpilih
+                    this.classList.add('selected');
+                });
+            });
+        });
+
+        // --- Preset buttons & atom info / confetti / melody ---
+        // Simple confetti (DOM canvas)
+        const confettiCanvas = document.createElement('canvas');
+        confettiCanvas.id = 'confetti-canvas';
+        document.body.appendChild(confettiCanvas);
+        const confCtx = confettiCanvas.getContext && confettiCanvas.getContext('2d');
+        function resizeConfetti() { confettiCanvas.width = window.innerWidth; confettiCanvas.height = window.innerHeight; }
+        window.addEventListener('resize', resizeConfetti);
+        resizeConfetti();
+
+        function burstConfetti() {
+            if (!confCtx) return;
+            const colors = ['#ff6b6b','#ffd54f','#4a9cff','#7cffb2','#c77cff'];
+            const pieces = [];
+            for (let i=0;i<80;i++) {
+                pieces.push({x: Math.random()*confettiCanvas.width, y: -10, vx: (Math.random()-0.5)*6, vy: Math.random()*4+2, color: colors[Math.floor(Math.random()*colors.length)], life: Math.random()*80+60});
+            }
+            let frame = 0;
+            const id = setInterval(()=>{
+                confCtx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height);
+                for (let p of pieces) {
+                    p.x += p.vx; p.y += p.vy; p.vy += 0.12; p.life--; confCtx.fillStyle = p.color; confCtx.fillRect(p.x,p.y,6,10);
+                }
+                frame++; if (frame>180) { clearInterval(id); confCtx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height); }
+            }, 16);
+        }
+
+        // Simple melody using WebAudio API
+        let audioCtx = null;
+        let melodyOn = false;
+        function toggleMelody() {
+            melodyOn = !melodyOn;
+            const btn = document.getElementById('toggle-melody');
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (melodyOn) {
+                btn.textContent = 'Melodi: ON';
+                playMelodyShort();
+            } else {
+                btn.textContent = 'Melodi: OFF';
+            }
+        }
+
+        function playMelodyShort() {
+            if (!audioCtx) return;
+            const notes = [440, 494, 523, 587];
+            let t = audioCtx.currentTime;
+            for (let i=0;i<notes.length;i++) {
+                const o = audioCtx.createOscillator();
+                const g = audioCtx.createGain();
+                o.type = 'sine'; o.frequency.setValueAtTime(notes[i], t + i*0.18);
+                g.gain.setValueAtTime(0.0001, t + i*0.18);
+                g.gain.exponentialRampToValueAtTime(0.12, t + i*0.18 + 0.02);
+                g.gain.exponentialRampToValueAtTime(0.0001, t + i*0.18 + 0.18);
+                o.connect(g); g.connect(audioCtx.destination);
+                o.start(t + i*0.18); o.stop(t + i*0.18 + 0.19);
+            }
+        }
+
+        // Preset handlers
+        document.getElementById('preset-methane').addEventListener('click', ()=>{ currentCarbonCount = 1; createMolecule(1); updateAlkaneInfo(1); });
+        document.getElementById('preset-pentane').addEventListener('click', ()=>{ currentCarbonCount = 5; createMolecule(5); updateAlkaneInfo(5); });
+        document.getElementById('preset-2methylbutane').addEventListener('click', ()=>{ currentCarbonCount = 4; createMolecule(4, [{pos:2,type:'metil'}]); updateAlkaneInfo(4); });
+        document.getElementById('preset-2,3-dimethylpentane').addEventListener('click', ()=>{ currentCarbonCount = 5; createMolecule(5, [{pos:2,type:'metil'},{pos:3,type:'metil'}]); updateAlkaneInfo(5); });
+        document.getElementById('toggle-melody').addEventListener('click', toggleMelody);
+
+        // Atom click pin: show info
+        function onAtomClicked(intersect) {
+            const obj = intersect.object;
+            if (!obj || !obj.userData) return;
+            const info = document.getElementById('atom-info-text');
+            if (!info) return;
+            const label = obj.userData.label || (obj.material && obj.material.color ? (obj.material.color.equals(new THREE.Color(0x333333)) ? 'C' : 'H') : 'Atom');
+            let text = `Anda mengklik: ${label}`;
+            if (/C/.test(label)) text += ' — Karbon (C). CH₃ = 3 H, CH₂ = 2 H, CH₄ = 4 H.';
+            else text += ' — Hidrogen (H).'
+            info.textContent = text;
+            // playful effects
+            burstConfetti(); if (melodyOn) playMelodyShort();
+        }
+
+        // detect click on atoms in renderer
+        renderer && renderer.domElement && renderer.domElement.addEventListener('mousedown', function(ev) {
+            const rect = renderer.domElement.getBoundingClientRect();
+            const x = ((ev.clientX - rect.left) / rect.width) * 2 - 1;
+            const y = -((ev.clientY - rect.top) / rect.height) * 2 + 1;
+            const v = new THREE.Vector2(x,y);
+            const rc = new THREE.Raycaster(); rc.setFromCamera(v, camera);
+            const ints = rc.intersectObjects(atomMeshes, true);
+            if (ints && ints.length>0) onAtomClicked(ints[0]);
+        });
+
+        // Inisialisasi aplikasi saat halaman dimuat
+        window.onload = init;
+
+        // Keyboard shortcuts
+        window.addEventListener('keydown', function(e) {
+            if (e.key === 'r' || e.key === 'R') { autoRotate = !autoRotate; }
+            if (e.key === 'f' || e.key === 'F') { if (currentMolecule) fitCameraToObject(currentMolecule, camera, controls); }
+            if (e.key === 'c' || e.key === 'C') {
+                // cycle presets
+                const presets = ['preset-methane','preset-pentane','preset-2methylbutane','preset-2,3-dimethylpentane'];
+                const active = presets.findIndex(id => document.getElementById(id).classList.contains('active'));
+                const next = (active + 1) % presets.length;
+                document.getElementById(presets[next]).click();
+            }
+        });
+    </script>
+</body>
+</html>
